@@ -8,10 +8,12 @@
             <h4>Tasks for {{ currentDate }}</h4>
             <v-list>
                 <div v-for="task in tasks" :key="task.id">
-                    <v-list-item>
+                    <v-list-item
+                        @click="toggleTask(task)"
+                    >
                         <v-list-item-action>
                             <v-checkbox
-                                :input-value="task.done"
+                                v-model="task.done"
                                 color="indigo"
                             ></v-checkbox>
                         </v-list-item-action>
@@ -29,56 +31,47 @@
 import { db } from '../firebase/db'
 // import firebase from 'firebase/app'
 
-// completed is an array of objects like this:
+// events is an array of objects like this:
 // {
-//   date: '2021-10-10', (or whatever date format I end up using)
-//   tasks: [
-//     'MgajESAuxzU3GgBE37t', 'MggN6xAeGwqxqo5AmMU',  
-//   ]
-// }
+//   start: '2021-10-10',
+//   name: 'eat a peach',
+//   taskId: '-MgajESAuxzU3GgBE37t'
+// } 
 
 export default {
     data: () => ({
         tasks: [],
-        events: [],
-        completed: [
+        events: [
             {
-                date: '2021-08-23',
-                tasks: [
-                    '-MgajESAuxzU3GgBE37t',
-                ]
+                start: '2021-08-23',
+                name: 'take a walk',
+                taskId: '-Mh5U_O_Ub3XnmxCS1Uk'
             },
             {
-                date: '2021-08-04',
-                tasks: [
-                    '-MgajESAuxzU3GgBE37t',
-                    '-MggN6xAeGwqxqo5AmMU',
-                ]
+                start: '2021-08-04',
+                name: 'take a walk',
+                taskId: '-Mh5U_O_Ub3XnmxCS1Uk'
+            },
+            {
+                start: '2021-08-04',
+                name: 'have a nap',
+                taskId: '-Mh5UcTyyE18V83OdVXA'
             }
         ],
         currentDate: null
     }),
-    mounted() {
-        this.updateEvents()
-    },
     firebase: {
         tasks: db.ref('tasks')
     },
     methods: {
         dateClicked({ date }) {
-            // passed date as string in format yyyy-mm-dd
             this.currentDate = date
             let currentTasks = this.getTasksForDate(date)
             this.setCheckboxes(currentTasks)
         },
         getTasksForDate(date) {
-            for (let i = 0; i < this.completed.length; i++) {
-                let current = this.completed[i]
-                if (current.date === date) {
-                    return current.tasks
-                }
-            }
-            return []
+            let eventsForThisDate = this.events.filter(event => event.start === date)
+            return eventsForThisDate.map(event => event.taskId)
         },
         setCheckboxes(taskIds) {
             for (let i = 0; i < this.tasks.length; i++) {
@@ -91,24 +84,17 @@ export default {
                 }
             }
         },
-        updateEvents() {
-            for (let i = 0; i < this.completed.length; i++) {
-                let day = this.completed[i]
-                for (let d = 0; d < day.tasks.length; d++) {
-                    let task = this.getTaskById(day.tasks[d])
-                    this.events.push({
-                        name: task.title,
-                        start: day.date
-                    })
-                }
+        toggleTask(task) {
+            let eventObject = {
+                name: task.title,
+                start: this.currentDate,
+                taskId: task['.key']
             }
-        },
-        getTaskById(taskId) {
-            for (let i = 0; i < this.tasks.length; i++) {
-                let task = this.tasks[i]
-                if (task['.key'] === taskId) {
-                    return task
-                }
+            let taskInEvents = this.events.filter(event => event.start === this.currentDate && event.taskId === task['.key'])
+            if (taskInEvents.length === 0) {
+                this.events.push(eventObject)
+            } else {
+                this.events = this.events.filter(event => event.start !== this.currentDate || event.taskId !== task['.key'])
             }
         }
     }

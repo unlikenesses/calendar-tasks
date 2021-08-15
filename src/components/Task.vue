@@ -65,7 +65,8 @@ export default {
     methods: {
         addTask () {
             db.ref('tasks').push({
-                title: this.taskName
+                title: this.taskName,
+                done: false
             })
             this.taskName = ''
         },

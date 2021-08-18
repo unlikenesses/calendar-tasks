@@ -7,9 +7,9 @@
         <div class="mt-5">
             <h4>Tasks for {{ currentDate }}</h4>
             <v-list>
-                <div v-for="task in tasks" :key="task.id">
+                <div v-for="(task, taskId) in tasks" :key="task.id">
                     <v-list-item
-                        @click="toggleTask(task)"
+                        @click="toggleTask(task, taskId)"
                     >
                         <v-list-item-action>
                             <v-checkbox
@@ -40,12 +40,12 @@ import { db } from '../firebase/db'
 
 export default {
     data: () => ({
-        tasks: [],
+        tasks: {},
         events: [
             {
-                start: '2021-08-23',
-                name: 'take a walk',
-                taskId: '-Mh5U_O_Ub3XnmxCS1Uk'
+                start: '2021-08-18',
+                name: 'Meditate (10 mins)',
+                taskId: '-MhAQ1UsFuiXkmKeexjg'
             },
             {
                 start: '2021-08-04',
@@ -58,43 +58,47 @@ export default {
                 taskId: '-Mh5UcTyyE18V83OdVXA'
             }
         ],
-        currentDate: null
+        currentDate: new Date().toISOString().split('T')[0]
     }),
-    firebase: {
-        tasks: db.ref('tasks')
+    mounted: function() {
+        db.ref('tasks').once('value', snapshot => {
+            this.tasks = snapshot.val()
+            this.setCheckboxes(this.currentDate)
+        })
     },
     methods: {
         dateClicked({ date }) {
             this.currentDate = date
-            let currentTasks = this.getTasksForDate(date)
-            this.setCheckboxes(currentTasks)
+            this.setCheckboxes(date)
         },
-        getTasksForDate(date) {
-            let eventsForThisDate = this.events.filter(event => event.start === date)
-            return eventsForThisDate.map(event => event.taskId)
-        },
-        setCheckboxes(taskIds) {
-            for (let i = 0; i < this.tasks.length; i++) {
-                let task = this.tasks[i]
-                let taskId = task['.key']
-                if (taskIds.indexOf(taskId) != -1) {
+        setCheckboxes(date) {
+            let completedTaskIds = this.getCompletedTasksForDate(date)
+            const checkboxTaskIds = Object.keys(this.tasks)
+            checkboxTaskIds.forEach(key => {
+                let task = this.tasks[key]
+                if (completedTaskIds.indexOf(key) != -1) {
                     task.done = true
                 } else {
                     task.done = false
                 }
-            }
+            })
         },
-        toggleTask(task) {
+        getCompletedTasksForDate(date) {
+            let completedTasksForThisDate = this.events.filter(event => event.start === date)
+
+            return completedTasksForThisDate.map(event => event.taskId)
+        },
+        toggleTask(task, taskId) {
             let eventObject = {
                 name: task.title,
                 start: this.currentDate,
-                taskId: task['.key']
+                taskId: taskId
             }
-            let taskInEvents = this.events.filter(event => event.start === this.currentDate && event.taskId === task['.key'])
+            let taskInEvents = this.events.filter(event => event.start === this.currentDate && event.taskId === taskId)
             if (taskInEvents.length === 0) {
                 this.events.push(eventObject)
             } else {
-                this.events = this.events.filter(event => event.start !== this.currentDate || event.taskId !== task['.key'])
+                this.events = this.events.filter(event => event.start !== this.currentDate || event.taskId !== taskId)
             }
         }
     }

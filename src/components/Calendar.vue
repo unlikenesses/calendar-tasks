@@ -29,37 +29,17 @@
 </template>
 <script>
 import { db } from '../firebase/db'
-// import firebase from 'firebase/app'
-
-// events is an array of objects like this:
-// {
-//   start: '2021-10-10',
-//   name: 'eat a peach',
-//   taskId: '-MgajESAuxzU3GgBE37t'
-// } 
+import firebase from 'firebase/app'
 
 export default {
     data: () => ({
         tasks: {},
-        events: [
-            {
-                start: '2021-08-18',
-                name: 'Meditate (10 mins)',
-                taskId: '-MhAQ1UsFuiXkmKeexjg'
-            },
-            {
-                start: '2021-08-04',
-                name: 'take a walk',
-                taskId: '-Mh5U_O_Ub3XnmxCS1Uk'
-            },
-            {
-                start: '2021-08-04',
-                name: 'have a nap',
-                taskId: '-Mh5UcTyyE18V83OdVXA'
-            }
-        ],
+        events: [],
         currentDate: new Date().toISOString().split('T')[0]
     }),
+    firebase: {
+        events: db.ref('events')
+    },
     mounted: function() {
         db.ref('tasks').once('value', snapshot => {
             this.tasks = snapshot.val()
@@ -96,9 +76,12 @@ export default {
             }
             let taskInEvents = this.events.filter(event => event.start === this.currentDate && event.taskId === taskId)
             if (taskInEvents.length === 0) {
-                this.events.push(eventObject)
+                db.ref('events').push(eventObject)
+            } else if (taskInEvents.length > 1) {
+                console.error('Found more than one event!')
             } else {
-                this.events = this.events.filter(event => event.start !== this.currentDate || event.taskId !== taskId)
+                let key = taskInEvents[0]['.key']
+                firebase.database().ref('events/' + key).remove()
             }
         }
     }

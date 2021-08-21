@@ -5,7 +5,19 @@
                 <v-list-item>
                     <v-list-item-content>
                         {{task.title}}
+                        <v-badge 
+                            inline
+                            :color="task.colour ? task.colour : 'black'"
+                        ></v-badge>
                     </v-list-item-content>
+                    <v-list-item-action>
+                        <v-btn 
+                            @click="editTask(task)"
+                            icon
+                        >
+                            <v-icon color="indigo lighten-1">mdi-pencil</v-icon>
+                        </v-btn>
+                    </v-list-item-action>
                     <v-list-item-action>
                         <v-btn 
                             @click="deleteTask(task)"
@@ -31,14 +43,27 @@
                         clearable
                     ></v-text-field>
                 </v-row>
-
+                <v-row>
+                    <v-select
+                        v-model="taskColour"
+                        :items="colours"
+                        label="Colour"
+                    ></v-select>
+                </v-row>
                 <v-row>
                     <v-btn
-                    color="success"
-                    class="mr-4"
-                    @click="addTask"
+                        color="success"
+                        class="mr-4"
+                        @click="taskSubmit"
                     >
-                    Add Task
+                    {{ editing ? 'Update' : 'Add' }} Task
+                    </v-btn>
+                    <v-btn
+                        v-if="editing"
+                        color="error"
+                        @click="cancelEdit"
+                    >
+                    Cancel
                     </v-btn>
                 </v-row>
             </v-container>
@@ -52,8 +77,12 @@ import firebase from 'firebase/app'
 export default {
     data: () => ({
         tasks: [],
+        colours: ['red', 'pink', 'blue', 'teal', 'green', 'lime', 'orange', 'brown', 'gray'],
         valid: false,
+        editing: false,
+        editingTaskId: null,
         taskName: '',
+        taskColour: '',
         nameRules: [
             v => !!v || 'Name is required',
             v => v.length <= 20 || 'Name must be less than 20 characters',
@@ -63,12 +92,40 @@ export default {
         tasks: db.ref('tasks')
     },
     methods: {
+        taskSubmit() {
+            if (this.editing) {
+                this.updateTask()
+            } else {
+                this.addTask()
+            }
+        },
         addTask () {
             db.ref('tasks').push({
                 title: this.taskName,
+                colour: this.taskColour,
                 done: false
             })
             this.taskName = ''
+            this.taskColour = ''
+        },
+        updateTask() {
+            db.ref('tasks/' + this.editingTaskId).update({
+                title: this.taskName,
+                colour: this.taskColour
+            })
+            this.cancelEdit()
+        },
+        editTask(task) {
+            this.editing = true
+            this.editingTaskId = task['.key']
+            this.taskName = task.title
+            this.taskColour = task.colour
+        },
+        cancelEdit() {
+            this.editing = false
+            this.editingTaskId = null
+            this.taskName = ''
+            this.taskColour = ''
         },
         deleteTask(task) {
             const key = task['.key']

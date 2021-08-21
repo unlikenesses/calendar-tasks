@@ -72,7 +72,8 @@ export default {
             let eventObject = {
                 name: task.title,
                 start: this.currentDate,
-                taskId: taskId
+                taskId: taskId,
+                color: task.colour ? task.colour : 'blue'
             }
             let taskInEvents = this.events.filter(event => event.start === this.currentDate && event.taskId === taskId)
             if (taskInEvents.length === 0) {

@@ -128,8 +128,11 @@ export default {
             this.taskColour = ''
         },
         deleteTask(task) {
-            const key = task['.key']
-            firebase.database().ref('tasks/' + key).remove()
+            let result = window.confirm('Are you sure you want to delete task "' + task.title + '"?')
+            if (result) {
+                const key = task['.key']
+                firebase.database().ref('tasks/' + key).remove()
+            }
         }
     }
 }

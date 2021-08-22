@@ -77,7 +77,7 @@ import firebase from 'firebase/app'
 export default {
     data: () => ({
         tasks: [],
-        colours: ['red', 'pink', 'blue', 'teal', 'green', 'lime', 'orange', 'brown', 'gray'],
+        colours: ['red', 'pink', 'blue', 'teal', 'green', 'lime', 'orange', 'brown', 'yellow'],
         valid: false,
         editing: false,
         editingTaskId: null,

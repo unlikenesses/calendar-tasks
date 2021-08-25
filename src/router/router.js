@@ -3,7 +3,8 @@ import VueRouter from 'vue-router'
 import Calendar from '../components/Calendar'
 import Task from '../components/Task'
 import Login from '../components/Login'
-import { auth } from '../firebase/firebase'
+import firebase from 'firebase/app'
+import 'firebase/auth'
 
 Vue.use(VueRouter)
 
@@ -17,9 +18,9 @@ const router = new VueRouter({
     routes
 })
 
-router.beforeEach((to, from, next) => {
-    const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
-    if (requiresAuth && !auth.currentUser) {
+router.beforeEach(async (to, from, next) => {
+    const requiresAuth = to.matched.some(route => route.meta.requiresAuth)
+    if (requiresAuth && !firebase.auth().currentUser) {
         next('/login')
     } else {
         next()

@@ -72,7 +72,6 @@
 </template>
 <script>
 import { db } from '../firebase/firebase'
-import firebase from 'firebase/app'
 
 export default {
     data: () => ({
@@ -131,7 +130,7 @@ export default {
             let result = window.confirm('Are you sure you want to delete task "' + task.title + '"?')
             if (result) {
                 const key = task['.key']
-                firebase.database().ref('tasks/' + key).remove()
+                db.ref('tasks/' + key).remove()
             }
         }
     }

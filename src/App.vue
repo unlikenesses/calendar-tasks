@@ -32,6 +32,14 @@
       >
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Daily Devoirs</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <div v-if="loggedIn">
+          <span>{{ loggedInUser }}</span>
+          <v-btn
+            class="ml-4"
+            @click="logout"
+          >Logout</v-btn>
+        </div>
       </v-app-bar>
   
       <v-main>
@@ -71,7 +79,31 @@
 </style>
 
 <script>
-  export default {
-    data: () => ({ drawer: null }),
-  }
+import firebase from 'firebase/app'
+import 'firebase/auth'
+
+export default {
+    data: () => ({
+        drawer: null,
+        loggedIn: false,
+        loggedInUser: ''
+    }),
+    mounted: function() {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this.loggedIn = true
+                this.loggedInUser = user.email
+            } else {
+                this.loggedIn = false
+                this.loggedInUser = ''
+            }
+        })
+    },
+    methods: {
+      logout() {
+        firebase.auth().signOut()
+        window.location.reload()
+      }
+    }
+}
 </script>

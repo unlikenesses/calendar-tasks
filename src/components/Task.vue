@@ -71,13 +71,12 @@
     </div>
 </template>
 <script>
-import { db } from '../firebase/db'
-import firebase from 'firebase/app'
+import { db } from '../firebase/firebase'
 
 export default {
     data: () => ({
         tasks: [],
-        colours: ['red', 'pink', 'blue', 'teal', 'green', 'lime', 'orange', 'brown', 'gray'],
+        colours: ['red', 'pink', 'blue', 'teal', 'green', 'lime', 'orange', 'brown', 'yellow'],
         valid: false,
         editing: false,
         editingTaskId: null,
@@ -131,7 +130,7 @@ export default {
             let result = window.confirm('Are you sure you want to delete task "' + task.title + '"?')
             if (result) {
                 const key = task['.key']
-                firebase.database().ref('tasks/' + key).remove()
+                db.ref('tasks/' + key).remove()
             }
         }
     }

@@ -28,8 +28,7 @@
     </div>
 </template>
 <script>
-import { db } from '../firebase/db'
-import firebase from 'firebase/app'
+import { db } from '../firebase/firebase'
 
 export default {
     data: () => ({
@@ -82,7 +81,7 @@ export default {
                 console.error('Found more than one event!')
             } else {
                 let key = taskInEvents[0]['.key']
-                firebase.database().ref('events/' + key).remove()
+                db.ref('events/' + key).remove()
             }
         }
     }

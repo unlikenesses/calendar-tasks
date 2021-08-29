@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Calendar from '../components/Calendar'
 import Task from '../components/Task'
 import Login from '../components/Login'
+import Register from '../components/Register'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 
@@ -11,7 +12,8 @@ Vue.use(VueRouter)
 const routes = [
     { path: '/', component: Calendar, meta: { requiresAuth: true } },
     { path: '/tasks', component: Task, meta: { requiresAuth: true } },
-    { path: '/login', component: Login }
+    { path: '/login', component: Login },
+    { path: '/register', component: Register }
 ]
 
 const router = new VueRouter({

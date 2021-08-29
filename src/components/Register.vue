@@ -2,15 +2,15 @@
     <div>
         <v-alert
             type="error"
-            v-show="loginFail"
+            v-show="registerFail"
         >
-            Login failed! {{ loginErrorMessage }}
+            Registration failed! {{ registerErrorMessage }}
         </v-alert>
         <v-layout align-center justify-center mt-14>
             <v-flex xs12 sm8 md4>
                 <v-card class="elevation-12">
                     <v-toolbar color="indigo" dark flat>
-                        <v-toolbar-title>Login form</v-toolbar-title>
+                        <v-toolbar-title>Register form</v-toolbar-title>
                     </v-toolbar>
                     <v-card-text>
                         <v-form v-model="isValid">
@@ -26,7 +26,7 @@
                             <v-text-field
                                 v-model="password"
                                 :rules="passwordRules"
-                                @keyup.enter="loginSubmit"
+                                @keyup.enter="registerSubmit"
                                 id="password" 
                                 label="Password" 
                                 name="password" 
@@ -38,13 +38,13 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-btn
-                            to='/register'
+                            to='/login'
                             >
-                        Click here to register
+                        Click here to login
                         </v-btn>
                         <v-spacer></v-spacer>
                         <v-btn 
-                            @click="loginSubmit"
+                            @click="registerSubmit"
                             color="indigo"
                             class="white--text"
                             :disabled="!isValid"
@@ -52,9 +52,9 @@
                             <v-progress-circular
                                 indeterminate
                                 :size="20"
-                                v-if="loggingIn"
+                                v-if="registering"
                             ></v-progress-circular>
-                            <span v-else>Login</span>
+                            <span v-else>Register</span>
                         </v-btn>
                     </v-card-actions>
                 </v-card>
@@ -69,9 +69,9 @@ import 'firebase/auth'
 export default {
     data: () => ({
         isValid: true,
-        loginFail: false,
-        loggingIn: false,
-        loginErrorMessage: '',
+        registerFail: false,
+        registering: false,
+        registerErrorMessage: '',
         email: '',
         password: '',
         emailRules: [
@@ -82,19 +82,19 @@ export default {
         ]
     }),
     methods: {
-        loginSubmit() {
-            this.loggingIn = true
-            firebase.auth().signInWithEmailAndPassword(this.email, this.password)
+        registerSubmit() {
+            this.registering = true
+            firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
                 .then(() => {
-                    this.loginFail = false
+                    this.registerFail = false
                     this.isValid = true
                     this.$router.push('/')
                 })
                 .catch((error) => {
-                    this.loginFail = true
+                    this.registerFail = true
                     this.password = ''
-                    this.loggingIn = false
-                    this.loginErrorMessage = error.message
+                    this.registering = false
+                    this.registerErrorMessage = error.message
                     console.log(error.code + ': ' + error.message)
                 })
         }

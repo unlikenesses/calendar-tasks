@@ -28,21 +28,28 @@
     </div>
 </template>
 <script>
+import firebase from 'firebase/app'
+import 'firebase/auth'
 import { db } from '../firebase/firebase'
 
 export default {
     data: () => ({
         tasks: {},
         events: [],
+        userId: null,
         currentDate: new Date().toISOString().split('T')[0]
     }),
-    firebase: {
-        events: db.ref('events')
-    },
     mounted: function() {
-        db.ref('tasks').once('value', snapshot => {
-            this.tasks = snapshot.val()
-            this.setCheckboxes(this.currentDate)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this.userId = user.uid
+                this.$rtdbBind('events', db.ref('events').child(this.userId))
+                // Set checkboxes:
+                db.ref('tasks').child(this.userId).once('value', snapshot => {
+                    this.tasks = snapshot.val()
+                    this.setCheckboxes(this.currentDate)
+                })
+            }
         })
     },
     methods: {
@@ -76,12 +83,12 @@ export default {
             }
             let taskInEvents = this.events.filter(event => event.start === this.currentDate && event.taskId === taskId)
             if (taskInEvents.length === 0) {
-                db.ref('events').push(eventObject)
+                db.ref('events').child(this.userId).push(eventObject)
             } else if (taskInEvents.length > 1) {
                 console.error('Found more than one event!')
             } else {
                 let key = taskInEvents[0]['.key']
-                db.ref('events/' + key).remove()
+                db.ref('events').child(this.userId).child(key).remove()
             }
         }
     }

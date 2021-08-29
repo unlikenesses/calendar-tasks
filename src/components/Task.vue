@@ -71,6 +71,8 @@
     </div>
 </template>
 <script>
+import firebase from 'firebase/app'
+import 'firebase/auth'
 import { db } from '../firebase/firebase'
 
 export default {
@@ -82,13 +84,19 @@ export default {
         editingTaskId: null,
         taskName: '',
         taskColour: '',
+        userId: null,
         nameRules: [
             v => !!v || 'Name is required',
             v => v.length <= 20 || 'Name must be less than 20 characters',
         ]
     }),
-    firebase: {
-        tasks: db.ref('tasks')
+    mounted: function() {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this.userId = user.uid
+                this.$rtdbBind('tasks', db.ref('tasks').child(this.userId))
+            }
+        })
     },
     methods: {
         taskSubmit() {
@@ -99,7 +107,7 @@ export default {
             }
         },
         addTask () {
-            db.ref('tasks').push({
+            db.ref('tasks').child(this.userId).push({
                 title: this.taskName,
                 colour: this.taskColour,
                 done: false
@@ -108,7 +116,7 @@ export default {
             this.taskColour = ''
         },
         updateTask() {
-            db.ref('tasks/' + this.editingTaskId).update({
+            db.ref('tasks').child(this.userId).child(this.editingTaskId).update({
                 title: this.taskName,
                 colour: this.taskColour
             })
@@ -130,7 +138,7 @@ export default {
             let result = window.confirm('Are you sure you want to delete task "' + task.title + '"?')
             if (result) {
                 const key = task['.key']
-                db.ref('tasks/' + key).remove()
+                db.ref('tasks').child(this.userId).child(key).remove()
             }
         }
     }

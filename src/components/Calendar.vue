@@ -1,7 +1,43 @@
 <template>
     <div class="pa-5">
+        <v-sheet>
+            <v-toolbar flat>
+                <v-btn
+                    outlined
+                    fab
+                    text
+                    small
+                    color="grey darken-2"
+                    @click="prev"
+                    class="mr-2"
+                >
+                    <v-icon small>
+                    mdi-chevron-left
+                    </v-icon>
+                </v-btn>
+                <v-btn
+                    outlined
+                    fab
+                    text
+                    small
+                    color="grey darken-2"
+                    @click="next"
+                    class="mr-4"
+                >
+                    <v-icon small>
+                    mdi-chevron-right
+                    </v-icon>
+                </v-btn>
+                <v-toolbar-title v-if="$refs.calendar">
+                    {{ $refs.calendar.title }}
+                </v-toolbar-title>
+            </v-toolbar>
+        </v-sheet>
         <v-calendar
+            ref="calendar"
             :events="events"
+            type="month"
+            v-model="focus"
             @click:date="dateClicked"
         ></v-calendar>
         <div class="mt-5">
@@ -34,12 +70,14 @@ import { db } from '../firebase/firebase'
 
 export default {
     data: () => ({
+        focus: '',
         tasks: {},
         events: [],
         userId: null,
         currentDate: new Date().toISOString().split('T')[0]
     }),
     mounted: function() {
+        this.$refs.calendar.checkChange()
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 this.userId = user.uid
@@ -53,6 +91,12 @@ export default {
         })
     },
     methods: {
+        prev() {
+            this.$refs.calendar.prev()
+        },
+        next() {
+            this.$refs.calendar.next()
+        },
         dateClicked({ date }) {
             this.currentDate = date
             this.setCheckboxes(date)

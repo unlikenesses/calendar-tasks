@@ -41,7 +41,7 @@
             @click:date="dateClicked"
         ></v-calendar>
         <div class="mt-5">
-            <h4>Tasks for {{ currentDate }}</h4>
+            <h4>Tasks for {{ humanDate }}</h4>
             <v-list>
                 <div v-for="(task, taskId) in tasks" :key="task.id">
                     <v-list-item
@@ -76,6 +76,16 @@ export default {
         userId: null,
         currentDate: new Date().toISOString().split('T')[0]
     }),
+    computed: {
+        humanDate: function() {
+            return new Date(`${this.currentDate}T00:00:00`).toLocaleString('en-US', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            })
+        }
+    },
     mounted: function() {
         this.$refs.calendar.checkChange()
         firebase.auth().onAuthStateChanged((user) => {
